@@ -1,8 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import {
+  Stack,
   calculateDiscount,
+  canDrive,
+  fetchData,
   getCoupons,
   isPriceInRange,
+  isValidUsername,
   validateUserInput,
 } from "../src/core";
 
@@ -107,4 +111,89 @@ describe("isPriceInRange", () => {
   });
 });
 
+describe("isValidUsername", () => {
+  const minLength = 5;
+  const maxLength = 15;
 
+  it("should return false if username is too short", () => {
+    expect(isValidUsername("a".repeat(minLength - 1))).toBe(false);
+  });
+
+  it("should return false if username is too long", () => {
+    expect(isValidUsername("a".repeat(maxLength + 1))).toBe(false);
+  });
+
+  it("should return true if username is at the min or max length", () => {
+    expect(isValidUsername("a".repeat(minLength))).toBe(true);
+    expect(isValidUsername("a".repeat(maxLength))).toBe(true);
+  });
+
+  it("should return true if username is within the length constraint", () => {
+    expect(isValidUsername("a".repeat(minLength + 1))).toBe(true);
+    expect(isValidUsername("a".repeat(maxLength - 1))).toBe(true);
+  });
+
+  // it('should return false for invalid input types', () => {
+  //   expect(isValidUsername(null)).toBe(false);
+  //   expect(isValidUsername(undefined)).toBe(false);
+  //   expect(isValidUsername(1)).toBe(false);
+  // });
+});
+
+describe("canDrive", () => {
+  it("should return an error for invalid country code", () => {
+    expect(canDrive(20, "FR")).toMatch(/invalid/i);
+  });
+
+  it.each([
+    { age: 15, country: "US", result: false },
+    { age: 16, country: "US", result: true },
+    { age: 17, country: "US", result: true },
+    { age: 16, country: "UK", result: false },
+    { age: 17, country: "UK", result: true },
+    { age: 18, country: "UK", result: true },
+  ])(
+    "should return $result from $age, $country",
+    ({ age, country, result }) => {
+      expect(canDrive(age, country)).toBe(result);
+    }
+  );
+});
+
+describe("fetchData", () => {
+  it("should return a promise thta will resolve to an array of numbers", async () => {
+    try {
+      await fetchData();
+    } catch (error) {
+      expect(error).toHaveProperty("reason");
+      expect(error.reason).toMatch(/fail/i);
+    }
+  });
+});
+
+describe('Stack', () => {
+  let stack;
+
+  beforeEach(() => {
+    stack = new Stack();
+  });
+
+  it('push should add an item to the stack', () => {
+    stack.push(1);
+    expect(stack.size()).toBe(1);
+  });
+
+  it('pop should remove and return the top item from the stack', () => {
+    stack.push(1);
+    stack.push(2);
+
+    const poppedItem = stack.pop();
+
+    expect(poppedItem).toBe(2);
+    expect(stack.size()).toBe(1);
+  });
+
+  it('pop should throw an error if stack is empty', () => {
+    expect(() => stack.pop()).toThrow(/empty/i);
+  })
+})
